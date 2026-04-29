@@ -1,6 +1,6 @@
 {
   "name": "@aegisjsproject/atlas",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A client-side router library using `Navigation` & `URLPattern`",
   "keywords": [
     "router",

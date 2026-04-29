@@ -1,9 +1,6 @@
 import { init, back, forward, reload } from '@aegisjsproject/atlas';
 
-init({
-	'/posts/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug': '/routes/blog.js',
-	'/search': '/routes/form.js',
-}, { root: 'main', preload: true });
+init('routes', { root: 'main', preload: true });
 
 const backButton = document.createElement('button');
 const forwardButton = document.createElement('button');

@@ -164,9 +164,9 @@ export function init(routes, {
 	signal,
 } = {}) {
 	if (typeof routes === 'string') {
-		init(JSON.parse(document.scripts.namedItem(routes).textContent), { root, preload, signal });
+		init(JSON.parse(document.scripts.namedItem(routes).innerHTML), { root, preload, signal });
 	} else if (typeof routes === 'number') {
-		init(JSON.parse(document.scripts.item(routes).textContent), { root, preload, signal });
+		init(JSON.parse(document.scripts.item(routes).innerHTML), { root, preload, signal });
 	} else if (routes instanceof HTMLScriptElement) {
 		init(JSON.parse(routes.textContent), { root, preload, signal });
 	} else if (typeof routes === 'object') {

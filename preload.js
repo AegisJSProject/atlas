@@ -192,10 +192,7 @@ export async function preloadOnHover(target, {
 			const pattern = getRegistryKey(currentTarget.href);
 
 			if (pattern instanceof URLPattern) {
-				const specifier = getRegistrySpecifier(pattern);
-				const resolved = import.meta.resolve(specifier);
-
-				await preloadModule(resolved, {
+				await preloadModule(getRegistrySpecifier(pattern), {
 					fetchPriority,
 					referrerPolicy,
 					crossOrigin,
