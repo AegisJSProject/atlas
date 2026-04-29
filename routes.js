@@ -3,6 +3,12 @@
  */
 const reg = new Map();
 
+const cache = new Map();
+
+const PATH_EXP = /^(?:\.*\/)+/;
+
+export const isBareSpecifier = specifier => ! PATH_EXP.test(specifier);
+
 /**
  * @typedef RouteMatch
  * @property {URLPatternResult|null} result The results of `pattern.exec(url)`
@@ -37,16 +43,37 @@ export const getRegistrySpecifier = key => reg.get(key);
  * @returns {RouteMatch}
  */
 export function lookupRoute(url) {
-	const key = getRegistryKey(url);
-
-	if (key instanceof URLPattern) {
-		return Object.freeze({
-			result: key.exec(url),
-			specifier: reg.get(key),
-			hasRegExpGroups: key.hasRegExpGroups,
-		});
+	if (cache.has(url)) {
+		return cache.get(url);
 	} else {
-		return invalidMatchResult;
+		const key = getRegistryKey(url);
+
+		if (key instanceof URLPattern) {
+			const match = Object.freeze({
+				result: key.exec(url),
+				specifier: reg.get(key),
+				hasRegExpGroups: key.hasRegExpGroups,
+			});
+
+			cache.set(url, match);
+			return match;
+		} else {
+			cache.set(url, invalidMatchResult);
+			return invalidMatchResult;
+		}
+
+	}
+}
+
+function resolveSpecifier(specifier) {
+	if (isBareSpecifier(specifier)) {
+		return import.meta.resolve(specifier);
+	} else if (URL.canParse(specifier)) {
+		return specifier;
+	} else if (specifier instanceof URL) {
+		return specifier.href;
+	} else {
+		return new URL (specifier, document.baseURI).href;
 	}
 }
 
@@ -62,13 +89,11 @@ export function registerModule(pattern, specifier) {
 	} else if (typeof pattern === 'string') {
 		reg.set(
 			URL.canParse(pattern) ? new URLPattern(pattern) : new URLPattern({ pathname: pattern }),
-			specifier.toString()
+			resolveSpecifier(specifier)
 		);
 	} else if (! (pattern instanceof URLPattern)) {
 		throw new TypeError(`Invalid pattner "${pattern}".`);
-	} else if (specifier instanceof URL) {
-		reg.set(pattern, specifier.href);
-	} else  {
-		reg.set(pattern, specifier);
+	} else {
+		reg.set(pattern, resolveSpecifier(specifier));
 	}
 }
