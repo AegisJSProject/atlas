@@ -1,7 +1,7 @@
 {
   "name": "@aegisjsproject/atlas",
   "version": "1.0.0",
-  "description": "A template repo for npm packages",
+  "description": "A client-side router library using `Navigation` & `URLPattern`",
   "keywords": [
     "router",
     "navigation-api",
