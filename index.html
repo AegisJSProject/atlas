@@ -8,13 +8,30 @@
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
 		<script type="importmap" integrity="{{ INTEGRITY }}">{{ IMPORTMAP }}</script>
 		<script src="{{ POLYFILLS }}" referrerpolicy="no-referrer" crossorigin="anonymous" defer=""></script>
+		<script type="application/json" name="routes">
+			"/posts/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug": "/routes/blog.js",
+			"/search": "/routes/form.js"
+		</script>
+		<script type="module" src="/index.js" referrerpolicy="no-referrer"></script>
 	</head>
 	<body>
 		<header id="header">
 			<h1>Hello, World!</h1>
 		</header>
-		<nav id="nav"></nav>
+		<nav id="nav">
+			<a href="/">Home</a>
+			<a href="/posts/2026/04/29/test-post">Test Post</a>
+		</nav>
 		<main id="main">
+			<search>
+				<form action="/search">
+					<label for="search">Search</label>
+					<input type="search" id="search" name="q" placeholder="query" required="" />
+					<button type="submit">Submit</button>
+					<button type="submit" formmethod="get">GET</button>
+					<button type="submit" formmethod="post">POST</button>
+				</form>
+			</search>
 			<details>
 				<summary>Request</summary>
 				<pre>

@@ -1,5 +1,4 @@
 import { imports } from '@shgysk8zer0/importmap';
-import { checkCacheItem, setCacheItem } from '@aegisjsproject/http-utils/cache.js';
 import { addTrustedTypePolicy, addScriptSrc, useDefaultCSP } from '@aegisjsproject/http-utils/csp.js';
 
 addScriptSrc(
@@ -7,7 +6,7 @@ addScriptSrc(
 	'https://unpkg.com/@shgysk8zer0/',
 );
 
-addTrustedTypePolicy('aegis-sanitizer#html');
+addTrustedTypePolicy('aegis-atlas#html', 'aegis-sanitizer#html');
 
 export default {
 	routes: {
@@ -17,7 +16,6 @@ export default {
 	open: true,
 	requestPreprocessors: [
 		'@aegisjsproject/http-utils/request-id.js',
-		checkCacheItem,
 	],
 	responsePostprocessors: [
 		'@aegisjsproject/http-utils/compression.js',
@@ -28,6 +26,5 @@ export default {
 				response.headers.append('Link', `<${imports['@shgysk8zer0/polyfills']}>; rel="preload"; as="script"; fetchpriority="high"; crossorigin="anonymous"; referrerpolicy="no-referrer"`);
 			}
 		},
-		setCacheItem,
 	],
 };
