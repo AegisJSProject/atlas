@@ -1,4 +1,4 @@
-import { registerModule, lookupRoute } from './routes.js';
+import { registerModule, lookupRoute, hasRegistryKey } from './routes.js';
 import { observePreloadsOn } from './preload.js';
 
 /**
@@ -29,7 +29,8 @@ const DESC_SELECTOR = 'meta[name="description"], meta[itemprop="description"], m
  * @property {AbortController} controller
  * @property {AbortSignal} signal
  * @property {NavigationType} type
- * @property {URL} url
+ * @property {URL} newURL
+ * @property {URL} oldURL
  * @property {any} state
  * @property {any} info
  * @property {number} timestamp
@@ -86,8 +87,9 @@ function getRequestMethod(source) {
 /**
  *
  * @param {NavigationEvent} event
+ * @param {URL} oldURL
  */
-export async function handleNavigation(event) {
+export async function handleNavigation(event, oldURL = new URL(location.href)) {
 	if (! (event instanceof NavigateEvent)) {
 		throw new TypeError('Not a navigation event.');
 	} else if (event.signal.aborted) {
@@ -97,15 +99,18 @@ export async function handleNavigation(event) {
 		const request = new Request(event.destination.url, {
 			// `sourceElement` could be a form, a `<button type="submit">`, or an `<a>
 			method: method,
-			body: method === 'GET' ? undefined : event.formData,// ?? new FormData(event.sourceElement?.form ?? event.sourceElement),
+			body: method === 'GET' ? undefined : event.formData,
 			signal: event.signal,
+			mode: 'same-origin',
+			credentials: 'include',
+			priority: 'high',
 		});
 
 		const { result, specifier, hasRegExpGroups } = lookupRoute(event.destination.url);
 
 		if (typeof specifier !== 'string' || result === null) {
 			const resp = await fetch(request);
-			await updateContent(resp);
+			await updateContent(resp, {});
 		} else {
 			const params = hasRegExpGroups ? {
 				...result.protocol.groups, ...result.username.groups, ...result.password.groups, ...result.hostname.groups,
@@ -124,6 +129,12 @@ export async function handleNavigation(event) {
 			const signal = AbortSignal.any([controller.signal, request.signal]);
 
 			/**
+			 * Dispose of stack on next navigation or on error, triggering clean-up
+			 */
+			navigation.addEventListener('navigate', () => stack.dispose(), { once: true, signal });
+			navigation.addEventListener('navigateerror', () => stack.dispose(), { once: true, signal });
+
+			/**
 			 * @type {RouteContextObject}
 			 */
 			const context = Object.freeze({
@@ -133,7 +144,8 @@ export async function handleNavigation(event) {
 				type: event.navigationType,
 				state: event.destination.getState(),
 				info: event.info,
-				url: new URL(event.destination.url),
+				newURL: new URL(event.destination.url),
+				oldURL,
 				signal,
 				result,
 				params,
@@ -143,8 +155,7 @@ export async function handleNavigation(event) {
 				return await handleRequestModule(request, context, module);
 			} catch(err) {
 				reportError(err);
-			} finally {
-				stack.dispose();
+				stack.dispose(); // Ensure clean-up happens even in an error
 			}
 		}
 	}
@@ -177,13 +188,18 @@ export function init(routes, {
 		}
 
 		navigation.addEventListener('navigate', event => {
+			const oldURL = new URL(location.href);
 			if (event.canIntercept && event.destination.url.startsWith(location.origin) && ! event.sourceElement?.classList?.contains?.('no-router')) {
-				event.intercept({ handler: () => handleNavigation(event) });
+				event.intercept({ handler: () => handleNavigation(event, oldURL) });
 			}
 		}, { signal });
 
 		if (preload) {
 			observePreloadsOn(document.body);
+		}
+
+		if (hasRegistryKey(location.href)) {
+			navigation.reload({ info: 'Initial Load', state: navigation.currentEntry.getState() });
 		}
 	} else {
 		throw new TypeError(`Routes must be an object, \`<script>\`, or name/index of \`document.scripts\`. Got a ${typeof routes}.`);
@@ -268,28 +284,42 @@ async function handleRequestModule(request, context, module) {
 	if (typeof module.default === 'undefined') {
 		throw new TypeError(`No default export in module for <${request.url}>.`);
 	} else if (typeof module.default === 'function') {
-		const result = await module.default(request, context);
-		await updateContent(result);
-		updateMeta(module);
+		const result = module.default.prototype instanceof HTMLElement
+			? new module.default(request, context)
+			: await module.default(request, context);
+
+		await updateContent(result, module);
+		updateMeta(module, context);
 	} else {
 		await updateContent(module.default);
-		updateMeta(module);
+		updateMeta(module, context);
 	}
 }
 
-function updateMeta({ title, description, styles }) {
+async function updateMeta({ title, description, styles }, context) {
 	if (typeof title === 'string') {
 		document.title = title;
+	} else if (typeof title === 'function') {
+		document.title = await title(context);
 	}
 
 	if (typeof description === 'string') {
 		setDescription(description);
+	} else if (typeof description === 'function') {
+		setDescription(await description(context));
 	}
 
 	if (styles instanceof CSSStyleSheet) {
 		document.adoptedStyleSheets = [...document.adoptedStyleSheets, styles];
 	} else if (Array.isArray(styles) && styles.length !== 0) {
 		document.adoptedStyleSheets = [...document.adoptedStyleSheets, ...styles];
+	} else if (typeof styles === 'function') {
+		const newStyles = await styles(context);
+		if (newStyles instanceof CSSStyleSheet) {
+			document.adoptedStyleSheets = [...document.adoptedStyleSheets, newStyles];
+		} else if (Array.isArray(newStyles) && newStyles.length !== 0) {
+			document.adoptedStyleSheets = [...document.adoptedStyleSheets, ...newStyles];
+		}
 	}
 }
 
@@ -297,7 +327,7 @@ function updateMeta({ title, description, styles }) {
  *
  * @param {HandlerResult} content
  */
-async function updateContent(content) {
+async function updateContent(content, { viewTransitionTypes: types = [] } = {}) {
 	if (content instanceof URL) {
 		navigate(content);
 	} else if (content instanceof Response) {
@@ -309,18 +339,33 @@ async function updateContent(content) {
 			const html = await content.text();
 			/** @type HTMLDocument */
 			const doc = Document.parseHTMLUnsafe(policy.createHTML(html)); // Unsafe, but necessary... Same-origin at least
-			await updateContent(doc);
+			await updateContent(doc, { viewTransitionTypes: types });
 		}
 	} else if (content instanceof Element || content instanceof DocumentFragment) {
-		root.replaceChildren(content);
+		await document.startViewTransition({
+			types,
+			update() {
+				root.replaceChildren(content);
+			},
+		});
 	} else if (content instanceof HTMLDocument) {
 		document.title = content.title;
 		setDescription(content.head.querySelector(DESC_SELECTOR)?.content);
 
 		if (root instanceof HTMLBodyElement) {
-			root.replaceChildren(...content.body.childNodes);
+			await document.startViewTransition({
+				types,
+				update() {
+					root.replaceChildren(...content.body.childNodes);
+				}
+			});
 		} else if (root instanceof HTMLElement && typeof root.id === 'string') {
-			root.replaceChildren(...content.getElementById(root.id)?.childNodes ?? []);
+			await document.startViewTransition({
+				types,
+				update() {
+					root.replaceChildren(...content.getElementById(root.id)?.childNodes ?? []);
+				}
+			});
 		} else {
 			throw new TypeError('Root must be `<body>` or an element with an `id`.');
 		}

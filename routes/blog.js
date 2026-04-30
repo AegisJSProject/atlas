@@ -4,9 +4,11 @@
  * @param {import('../atlas').RouteContextObject} context
  * @returns {HTMLPreElement}
  */
-async function handler(req, context) {
+export default async function handler(req, context) {
 	const pre = document.createElement('pre');
 	const code = document.createElement('code');
+	context.stack.defer(() => console.log('Disposed'));
+	context.signal.addEventListener('abort', console.log, { once: true });
 
 	const date = new Date(
 		parseInt(context.params.year),
@@ -33,4 +35,14 @@ async function handler(req, context) {
 	return pre;
 };
 
-export default handler;
+export const description = ({
+	params: { year = '2026', month = '01', day = '01' } = {},
+}) => {
+	const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0);
+
+	return `Post from ${date.toLocaleDateString()}`;
+};
+
+export const title = ({
+	params: { slug = 'Untitled Post' } = {},
+}) => slug.charAt(0).toUpperCase() + slug.substring(1).replaceAll(/-+([a-z])/g, (_, c) => ' ' + c.toUpperCase());

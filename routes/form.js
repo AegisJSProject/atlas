@@ -4,7 +4,7 @@
  * @param {import('../atlas').RouteContextObject} context
  * @returns {HTMLPreElement}
  */
-async function handler(req, context) {
+export default async function handler(req, context) {
 	const pre = document.createElement('pre');
 	const code = document.createElement('code');
 
@@ -21,5 +21,3 @@ async function handler(req, context) {
 	pre.append(code);
 	return pre;
 };
-
-export default handler;

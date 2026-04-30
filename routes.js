@@ -31,6 +31,13 @@ const invalidMatchResult = Object.freeze({ result: null, specifier: null, hasReg
 export const getRegistryKey = url => reg.keys().find(pattern => pattern.test(url));
 
 /**
+ * Checks if a route for the given URL is registered
+ * @param {string} [url=location.href]
+ * @return {boolean}
+ */
+export const hasRegistryKey = (url = location.href) => reg.keys().some(pattern => pattern.test(url));
+
+/**
  *
  * @param {URLPattern} key
  * @returns {string|null} The module specifier

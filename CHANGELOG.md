@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.0.2] - 2026-04-30
+
+### Added
+- Implement View Transitions (resolves #6)
+- Support router handling on initial load (resolves #5)
+- Handle page metadata via functions (resolves #4)
+
 ## [v1.0.1] - 22026-04-29
 
 ### Fixed
