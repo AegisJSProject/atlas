@@ -12,6 +12,8 @@ export default {
 	routes: {
 		'/': '@aegisjsproject/dev-server',
 		'/favicon.svg': '@aegisjsproject/dev-server/favicon',
+		'/posts/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug': '@aegisjsproject/dev-server',
+		'/search': '@aegisjsproject/dev-server',
 	},
 	open: true,
 	requestPreprocessors: [

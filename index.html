@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 	<head>
-		<title>NPM Template</title>
+		<title>@aegisjsproject/atlas</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="color-scheme" content="light dark" />
+		<meta name="description" content="A client-side router library using `Navigation` & `URLPattern`" />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
 		<script type="importmap" integrity="{{ INTEGRITY }}">{{ IMPORTMAP }}</script>
 		<script src="{{ POLYFILLS }}" referrerpolicy="no-referrer" crossorigin="anonymous" defer=""></script>
 		<script type="application/json" name="routes">{
 			"/posts/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug": "/routes/blog.js",
-			"/search": "@aegisjsproject/atlas/routes/form.js",
-			"/foo": "@aegisjsproject/core/parsers/html.js"
+			"/search": "@aegisjsproject/atlas/routes/form.js"
 		}</script>
 		<script type="module" src="/index.js" referrerpolicy="no-referrer"></script>
 	</head>
