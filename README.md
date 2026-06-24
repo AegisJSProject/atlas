@@ -26,11 +26,16 @@ A client-side router library using `Navigation` & `URLPattern`
 
 - [Code of Conduct](./.github/CODE_OF_CONDUCT.md)
 - [Contributing](./.github/CONTRIBUTING.md)
-<!-- - [Security Policy](./.github/SECURITY.md) -->
+- [Security Policy](./.github/SECURITY.md)
 
 ## Overview
 
 This router intercepts same-origin navigations and resolves them to registered route modules. Each module can return content in multiple native formats (e.g. `Response`, `Document`, `Element`), allowing flexibility without imposing rendering constraints.
+
+> [!IMPORTANT]
+> This requires the [Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API), which is Baseline 2026.
+> It also creates a [Trusted Types Policy](https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API), where supported,
+> labeled `"aegis-atlas#html"` for handling HTML responses without sanitizer restrictions.
 
 Key characteristics:
 
@@ -41,11 +46,6 @@ Key characteristics:
 - Built-in metadata handling (title, description, styles)
 - Optional preload observation
 - Abort-safe lifecycle with `AbortController` and `DisposableStack`
-
-> [!IMPORTANT]
-> This requires the [Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API), which is Baseline 2026.
-> It also creates a [Trusted Types Policy](https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API), where supported,
-> labeled `"aegis-atlas#html"` for handling HTML responses without sanitizer restrictions.
 
 > [!TIP]
 > Route module specifiers can use bare specifiers like `@acme/blog`. These can be resolved via an import map, for example:
@@ -61,7 +61,7 @@ Key characteristics:
 > ```
 >
 > This allows modules to be loaded from a CDN without changing route definitions.
----
+- - -
 
 ## Installation
 
@@ -73,7 +73,7 @@ import { init } from '@aegisjsproject/atlas';
 
 No dependencies required.
 
----
+- - -
 
 ## Core Concepts
 
@@ -84,9 +84,9 @@ Each route resolves to a module with the following shape:
 ```js
 
 export default async function handler(request, context) {
-	return new Response('<h1>Hello</h1>', {
-		headers: { 'Content-Type': 'text/html' }
-	});
+  return new Response('<h1>Hello</h1>', {
+    headers: { 'Content-Type': 'text/html' }
+  });
 }
 
 export const title = 'Page Title';
@@ -105,7 +105,7 @@ export const styles = new CSSStyleSheet();
 - `description` (optional)
 - `styles` (optional: `CSSStyleSheet` or array)
 
----
+- - -
 
 ### Handler Return Types
 
@@ -115,7 +115,7 @@ Handlers may return:
 - `Element`
 - `DocumentFragment`
 - `URL` (triggers navigation)
----
+- - -
 
 ### Route Context
 
@@ -124,21 +124,21 @@ Each handler receives a `context` object:
 ```js
 {
 
-	result,        // URLPatternResult
-	params,        // extracted route params
-	stack,         // DisposableStack
-	controller,    // AbortController
-	signal,        // AbortSignal
-	type,          // navigation type
-	url,           // URL instance
-	state,         // navigation state
-	info,          // navigation info
-	timestamp      // performance timestamp
+  result,        // URLPatternResult
+  params,        // extracted route params
+  stack,         // DisposableStack
+  controller,    // AbortController
+  signal,        // AbortSignal
+  type,          // navigation type
+  url,           // URL instance
+  state,         // navigation state
+  info,          // navigation info
+  timestamp      // performance timestamp
 }
 
 ```
 
----
+- - -
 
 ## Usage
 
@@ -147,13 +147,13 @@ Each handler receives a `context` object:
 ```js
 
 init({
-	'/': '/routes/home.js',
-	'/users/:id': '/routes/user.js'
-	'/posts/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug': '@acme/blog',
-	'/product/:sku': '@acme/store/product',
+  '/': '/routes/home.js',
+  '/users/:id': '/routes/user.js'
+  '/posts/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug': '@acme/blog',
+  '/product/:sku': '@acme/store/product',
 }, {
-	root: 'app',
-	preload: true
+  root: 'app',
+  preload: true
 });
 
 ```
@@ -164,7 +164,7 @@ init({
 - `preload`: Enable preload observation
 - `signal`: Optional `AbortSignal` for teardown
 
----
+- - -
 
 ### Navigation Helpers
 
@@ -178,7 +178,7 @@ forward();
 reload();
 ```
 
----
+- - -
 
 ### Navigation Lifecycle
 
@@ -190,7 +190,7 @@ import { whenLoaded } from './router.js';
 await whenLoaded();
 ```
 
----
+- - -
 
 ## Behavior Details
 
@@ -202,7 +202,7 @@ Navigation is intercepted only if:
 - URL is same-origin
 - Triggering element does **not** have `.no-router`
 
----
+- - -
 
 ### Content Handling
 
@@ -227,7 +227,7 @@ Navigation is intercepted only if:
 
 - Triggers navigation
 
----
+- - -
 
 ### Root Management
 
@@ -245,7 +245,7 @@ If root is `<body>`, full body is replaced.
 
 If root is an element with `id`, only matching subtree is replaced.
 
----
+- - -
 
 ### Metadata Updates
 
@@ -258,7 +258,7 @@ Route modules can define:
   - `twitter:description`
 - `styles` → appended to `document.adoptedStyleSheets`
 
----
+- - -
 
 ### Form Handling
 
@@ -266,7 +266,7 @@ Route modules can define:
 - Submits `FormData` when applicable
 - Uses `Request` API for consistency
 
----
+- - -
 
 ### Abort + Cleanup
 
@@ -278,7 +278,7 @@ Each navigation:
 
 Handlers should respect `context.signal` where applicable.
 
----
+- - -
 
 ### Trusted Types
 
@@ -296,18 +296,18 @@ This ensures CSP compatibility without stripping critical markup like:
 - inline event handlers
 - form attributes
 
----
+- - -
 
 ## Example Route
 
 ```js
 
 export default async function(request, { params }) {
-	return new Response(`
-		<h1>User ${params.id}</h1>
-	`, {
-		headers: { 'Content-Type': 'text/html' }
-	});
+  return new Response(`
+    <h1>User ${params.id}</h1>
+  `, {
+    headers: { 'Content-Type': 'text/html' }
+  });
 }
 
 export const title = 'User Profile';
@@ -315,7 +315,7 @@ export const description = 'User details page';
 
 ```
 
----
+- - -
 
 ## Notes
 
@@ -324,7 +324,7 @@ export const description = 'User details page';
 - Errors during routing are surfaced via `reportError`
 - Designed for modern browsers with Navigation API support
 
----
+- - -
 
 ## Summary
 
