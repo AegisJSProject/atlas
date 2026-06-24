@@ -32,6 +32,11 @@ A client-side router library using `Navigation` & `URLPattern`
 
 This router intercepts same-origin navigations and resolves them to registered route modules. Each module can return content in multiple native formats (e.g. `Response`, `Document`, `Element`), allowing flexibility without imposing rendering constraints.
 
+> [!IMPORTANT]
+> This requires the [Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API), which is Baseline 2026.
+> It also creates a [Trusted Types Policy](https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API), where supported,
+> labeled `"aegis-atlas#html"` for handling HTML responses without sanitizer restrictions.
+
 Key characteristics:
 
 - Native Navigation API (`navigation`)
@@ -41,12 +46,6 @@ Key characteristics:
 - Built-in metadata handling (title, description, styles)
 - Optional preload observation
 - Abort-safe lifecycle with `AbortController` and `DisposableStack`
-
-> [!IMPORTANT]
-> This requires the [Navigation API](https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API), which is Baseline 2026.
-> It also creates a [Trusted Types Policy](https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API), where supported,
-> labeled `"aegis-atlas#html"` for handling HTML responses without sanitizer restrictions.
-
 
 > [!TIP]
 > Route module specifiers can use bare specifiers like `@acme/blog`. These can be resolved via an import map, for example:
