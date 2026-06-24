@@ -1,6 +1,6 @@
 {
   "name": "@aegisjsproject/atlas",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A client-side router library using `Navigation` & `URLPattern`",
   "keywords": [
     "router",
@@ -85,13 +85,16 @@
   },
   "homepage": "https://github.com/AegisJSProject/atlas#readme",
   "devDependencies": {
-    "@aegisjsproject/dev-server": "^1.0.6",
-    "@aegisjsproject/http-utils": "^1.0.4",
+    "@aegisjsproject/dev-server": "^1.1.0",
+    "@aegisjsproject/http-utils": "^1.1.0",
     "@rollup/plugin-terser": "^1.0.0",
-    "@shgysk8zer0/eslint-config": "^1.0.9",
-    "@shgysk8zer0/http-server": "^1.1.2",
-    "@shgysk8zer0/importmap": "^1.9.10",
-    "eslint": "^10.2.1",
-    "rollup": "^4.60.2"
+    "@shgysk8zer0/eslint-config": "^1.1.0",
+    "@shgysk8zer0/http-server": "^1.2.0",
+    "@shgysk8zer0/importmap": "^1.10.2",
+    "eslint": "^10.5.0",
+    "rollup": "^4.62.2"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true
   }
 }

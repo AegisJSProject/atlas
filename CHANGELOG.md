@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v1.1.0] - 2026-06-24
+
+### Added
+- Add `.npmrc` to harden `npm i` & `npm ci` operations
+- Added `SECURITY.md` for reporting security issues
+
+### Changed
+- Update to node 26.3.0 / npm 11.16.0
+- Update from `publish` to `publish stage`
+- Implement security changes provided by SecurityStep
+
 ## [v1.0.2] - 2026-04-30
 
 ### Added
